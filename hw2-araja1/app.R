@@ -15,10 +15,12 @@ library(tibble)
 
 
 # Fetching the dataset mtcars into cars and changing the rowname to a column called "Model"
-mdrp=read.csv("mdrp-pa20.csv")
-mdrp.load = mdrp
+# Change = tp <- next time (per code standards)
+mdrp <- read.csv("mdrp-pa20.csv")
+mdrp.load <- mdrp
 
 # Define UI for application 
+# Confusing title, I think you meant to change this huh?
 ui <- navbarPage("Cars",
                 # Manin tab panel to switch between graphs and data 
                  tabPanel("Plot",
@@ -45,7 +47,8 @@ ui <- navbarPage("Cars",
                                                selected=1
                                         ),
                             #Bookmark button
-                            bookmarkButton()
+                            # Fixed bookmark button
+                            bookmarkButton(id = "bookmark")
                                       ),
                           # Main panel with the 3 graphs
                           mainPanel(plotlyOutput("plot"),plotlyOutput("plot2"),plotlyOutput("plot3") )
@@ -65,7 +68,7 @@ server <- function(input, output, session=session)
 {
   # Caputing the inputs for reactive functions
   swInput <- reactive({
-    mdrp=mdrp.load %>%
+    mdrp <- mdrp.load %>%
   # Filtering the slider for quarters
         filter(Quarter >=input$qtr_select[1] & Quarter <= input$qtr_select[2])
   # Filtering the products selected
@@ -79,10 +82,9 @@ server <- function(input, output, session=session)
     return(mdrp)
     })
   
-  
   # Plot the amount reimbursed by quarter
   output$plot <- renderPlotly({
-    mdrp=swInput()
+    mdrp <- swInput()
     ggplotly(ggplot(data=mdrp,aes(x=Quarter,y=sum(Amount),colour=Utilization.Type))+
                geom_col()+
                labs(title="Total Amount Reimbursed by Year",x="Quarter",y="Amount",colour="Type")
@@ -90,7 +92,7 @@ server <- function(input, output, session=session)
   })
   # Plot the Units and AMount
   output$plot2 <- renderPlotly({
-    mdrp=swInput()
+    mdrp <- swInput()
     ggplotly(ggplot(data=mdrp,aes(x=Units,y=Prescriptions,colour=Quarter,text=paste("<b>", Product.Name, ":</b> ")))+
                geom_point()+
                labs(title="Total Amount Reimbursed by Year",x="Units",y="Amount",colour="Quarter")
@@ -99,7 +101,8 @@ server <- function(input, output, session=session)
   })
   # Plot the Product and amount
   output$plot3 <- renderPlotly({
-    mdrp=swInput()
+    mdrp <- swInput()
+    # I think colour should have been changed to fill
     ggplotly(ggplot(data=mdrp,aes(x=Product.Name,y=sum(Amount),colour=Quarter))+
                geom_col()+
                theme(axis.text.x = element_text(angle = 60, hjust = 1,size=5)) +
@@ -118,11 +121,10 @@ server <- function(input, output, session=session)
   }
   )   
   # Bookmark Function
-  observe({
-    reactiveValuesToList(input)
-    session$doBookmark
+  # Fixed bookmark section
+  observeEvent(input$bookmark, {
+    session$doBookmark()
   })
-  onBookmarked(function(url) updateQueryString(url))
   
 }
 
